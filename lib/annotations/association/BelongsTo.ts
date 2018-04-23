@@ -1,17 +1,22 @@
-import {Model} from "../../models/Model";
-import {BELONGS_TO, addAssociation} from "../../services/association";
+import {AssociationOptionsBelongsTo} from 'sequelize';
+import {addAssociation, getPreparedAssociationOptions} from "../../services/association";
+import {ModelClassGetter} from "../../types/ModelClassGetter";
+import {BelongsToAssociation} from '../../models/association/BelongsToAssociation';
 
-export function BelongsTo(relatedClassGetter: () => typeof Model,
-                          foreignKey?: string): Function {
+export function BelongsTo(associatedClassGetter: ModelClassGetter,
+                          foreignKey?: string): Function;
+export function BelongsTo(associatedClassGetter: ModelClassGetter,
+                          options?: AssociationOptionsBelongsTo): Function;
+export function BelongsTo(associatedClassGetter: ModelClassGetter,
+                          optionsOrForeignKey?: string | AssociationOptionsBelongsTo): Function {
 
   return (target: any, propertyName: string) => {
-
-    addAssociation(
-      target,
-      BELONGS_TO,
-      relatedClassGetter,
-      propertyName,
-      foreignKey
+    const options: AssociationOptionsBelongsTo = getPreparedAssociationOptions(optionsOrForeignKey);
+    if (!options.as) options.as = propertyName;
+    addAssociation(target, new BelongsToAssociation(
+      associatedClassGetter,
+      options,
+      )
     );
   };
 }

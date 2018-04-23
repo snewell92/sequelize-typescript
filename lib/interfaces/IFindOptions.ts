@@ -1,17 +1,19 @@
-import {WhereOptions, LoggingOptions, SearchPathOptions, col, and, or, FindOptionsAttributesArray,
-  literal} from 'sequelize';
+import {
+  WhereOptions, LoggingOptions, SearchPathOptions, col, FindOptionsAttributesArray,
+  literal, fn, and, or, where
+} from 'sequelize';
 import {Model} from "../models/Model";
 import {IIncludeOptions} from "./IIncludeOptions";
 
 /* tslint:disable:array-type */
 /* tslint:disable:max-line-length */
 
-export interface IFindOptions extends LoggingOptions, SearchPathOptions {
+export interface IFindOptions<T> extends LoggingOptions, SearchPathOptions {
 
   /**
    * A hash of attributes to describe your search. See above for examples.
    */
-  where?: WhereOptions | Array<col | and | or | string> | col | and | or | string;
+  where?: WhereOptions<T> | where | fn | or | Array<col | and | or | string>;
 
   /**
    * A list of the attributes that you want to select. To rename an attribute, you can pass an array, with
@@ -41,8 +43,8 @@ export interface IFindOptions extends LoggingOptions, SearchPathOptions {
    * first element is the column / function to order by, the second is the direction. For example:
    * `order: [['name', 'DESC']]`. In this way the column will be escaped, but the direction will not.
    */
-  order?: string | col | literal | Array<string | number | typeof Model | { model: typeof Model, as?: string }> |
-    Array<string | col | literal | Array<string | number | typeof Model | { model: typeof Model, as?: string }>>;
+  order?: string | col | fn | literal | Array<string | number | typeof Model | { model: typeof Model, as?: string }> |
+    Array<string | col | fn | literal | Array<string | number | typeof Model | { model: typeof Model, as?: string }>>;
 
   /**
    * Limit the results
@@ -69,11 +71,26 @@ export interface IFindOptions extends LoggingOptions, SearchPathOptions {
   /**
    * having ?!?
    */
-  having?: WhereOptions;
+  having?: WhereOptions<any>;
 
   /**
    * Group by. It is not mentioned in sequelize's JSDoc, but mentioned in docs.
    * https://github.com/sequelize/sequelize/blob/master/docs/docs/models-usage.md#user-content-manipulating-the-dataset-with-limit-offset-order-and-group
    */
   group?: string | string[] | Object;
+
+  /**
+   * Apply DISTINCT(col) for FindAndCount(all)
+   */
+  distinct?: boolean;
+
+  /**
+   * Prevents a subquery on the main table when using include
+   */
+  subQuery?: boolean;
+
+  /**
+   * Throw EmptyResultError if a record is not found
+   */
+  rejectOnEmpty?: boolean | Error;
 }

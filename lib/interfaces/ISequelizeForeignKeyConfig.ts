@@ -1,7 +1,7 @@
-import {Model} from "../models/Model";
+import {ModelClassGetter} from "../types/ModelClassGetter";
 
 export interface ISequelizeForeignKeyConfig {
 
-  relatedClassGetter: () => typeof Model;
-  foreignKey: string;  
+  relatedClassGetter: ModelClassGetter;
+  foreignKey: string;
 }

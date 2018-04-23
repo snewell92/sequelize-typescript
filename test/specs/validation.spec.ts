@@ -1,3 +1,5 @@
+/* tslint:disable:max-classes-per-file */
+
 import {expect, use} from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import {DefineValidateOptions} from "sequelize";
@@ -8,6 +10,12 @@ import {
 } from "../models/ShoeWithValidation";
 import {majorVersion} from "../../lib/utils/versioning";
 import {Is} from "../../lib/annotations/validation/Is";
+import {Model} from "../../lib/models/Model";
+import {Table} from "../../lib/annotations/Table";
+import {Column} from "../../lib/annotations/Column";
+import {Length} from "../../lib/annotations/validation/Length";
+import {NotEmpty} from "../../lib/annotations/validation/NotEmpty";
+import {Validator} from '../../lib/annotations/validation/Validator';
 
 use(chaiAsPromised);
 
@@ -20,7 +28,7 @@ describe('validation', () => {
   describe(`rawAttributes of ${ShoeWithValidation.name}`, () => {
 
     const rawAttributes = ShoeWithValidation['rawAttributes'];
-    const shoeAttributes: {[key: string]: DefineValidateOptions} = {
+    const shoeAttributes: { [key: string]: DefineValidateOptions } = {
       id: {
         isUUID: UUID_VERSION
       },
@@ -98,7 +106,7 @@ describe('validation', () => {
 
   describe('validation', () => {
 
-    const data: {[key: string]: {valid: any[]; invalid: any[]}} = {
+    const data: { [key: string]: { valid: any[]; invalid: any[] } } = {
       id: {
         valid: ['903830b8-4dcc-4f10-a5aa-35afa8445691', null, undefined],
         invalid: ['', 'abc', 1],
@@ -142,8 +150,8 @@ describe('validation', () => {
       }
     };
 
-    const validPromises = [];
-    const invalidPromises = [];
+    const validPromises: Array<Promise<any>> = [];
+    const invalidPromises: Array<Promise<any>> = [];
 
     Object
       .keys(data)
@@ -190,8 +198,308 @@ describe('validation', () => {
     describe('Is', () => {
 
       it('Should throw due to missing name of function', () => {
-
         expect(() => Is(() => null)).to.throw(/Passed validator function must have a name/);
+      });
+
+    });
+
+    describe('Length', () => {
+
+      it('should not produce an error', () => {
+        @Table
+        class User extends Model<User> {
+          @Length({min: 0, max: 5}) @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: 'elisa'});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err).to.be.not.an('object'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.not.rejected;
+        }
+      });
+
+      it('should produce an error due to unfulfilled max', () => {
+        @Table
+        class User extends Model<User> {
+          @Length({min: 0, max: 5}) @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: 'elisa tree'});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err).to.be.an('object'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.rejected;
+        }
+      });
+
+      it('should produce an error due to unfulfilled min', () => {
+        @Table
+        class User extends Model<User> {
+          @Length({min: 5, max: 5}) @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: 'elli'});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err).to.be.an('object'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.rejected;
+        }
+      });
+
+      it('should not produce an error (max only)', () => {
+        @Table
+        class User extends Model<User> {
+          @Length({max: 5}) @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: 'elisa'});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err).to.be.not.an('object'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.not.rejected;
+        }
+      });
+
+      it('should produce an error (max only)', () => {
+        @Table
+        class User extends Model<User> {
+          @Length({max: 5}) @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: 'elisa tree'});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err).to.be.an('object'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.rejected;
+        }
+      });
+
+      it('should not produce an error (min only)', () => {
+        @Table
+        class User extends Model<User> {
+          @Length({min: 4}) @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: 'elisa'});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err).to.be.not.an('object'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.not.rejected;
+        }
+      });
+
+      it('should produce an error (min only)', () => {
+        @Table
+        class User extends Model<User> {
+          @Length({min: 5}) @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: 'elli'});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err).to.be.an('object'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.rejected;
+        }
+      });
+
+    });
+
+    describe('NotEmpty', () => {
+
+      it('should not produce an error', () => {
+        @Table
+        class User extends Model<User> {
+          @NotEmpty @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: 'elisa'});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err).to.be.not.an('object'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.not.rejected;
+        }
+      });
+
+      it('should produce an error', () => {
+        @Table
+        class User extends Model<User> {
+          @NotEmpty @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: ''});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err).to.be.an('object'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.rejected;
+        }
+      });
+
+      it('should not produce an error (with msg)', () => {
+        @Table
+        class User extends Model<User> {
+          @NotEmpty({msg: 'NotEmpty'}) @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: 'elisa'});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err).to.be.not.an('object'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.not.rejected;
+        }
+      });
+
+      it('should produce an error (with msg)', () => {
+        @Table
+        class User extends Model<User> {
+          @NotEmpty({msg: 'NotEmpty'}) @Column name: string;
+        }
+
+        const sequelizeValidationOnly = createSequelizeValidationOnly(false);
+        sequelizeValidationOnly.addModels([User]);
+        const user = new User({name: ''});
+
+        if (majorVersion === 3) {
+          return user.validate().then(err => expect(err.errors[0].message).to.eq('NotEmpty'));
+        } else if (majorVersion === 4) {
+          return expect(user.validate()).to.be.rejected;
+        }
+      });
+    });
+
+    describe('Validator', () => {
+
+      describe('simple model, one validator', () => {
+
+        const VALID_NAME = 'bob';
+        const ERROR_MESSAGE = `Invalid name: Only '${VALID_NAME}' is valid`;
+        const _sequelize = createSequelize({modelPaths: []});
+
+        @Table
+        class User extends Model<User> {
+          @Column name: string;
+          @Validator userValidator(): void {
+            if (this.name !== VALID_NAME) {
+              throw new Error(ERROR_MESSAGE);
+            }
+          }
+        }
+
+        _sequelize.addModels([User]);
+
+        it('should throw', () => {
+          const user =  new User({name: 'will'});
+
+          if (majorVersion === 3) {
+            return user.validate().then(err => expect(err.errors[0].message).to.eq(ERROR_MESSAGE));
+          } else if (majorVersion === 4) {
+            return expect(user.validate()).to.be.rejected;
+          }
+        });
+
+        it('should not throw', () => {
+          const user =  new User({name: VALID_NAME});
+
+          if (majorVersion === 3) {
+            return user.validate().then(err => expect(err).to.be.null);
+          } else if (majorVersion === 4) {
+            return expect(user.validate()).to.be.fulfilled;
+          }
+        });
+
+      });
+
+      describe('simple model, multiple validators', () => {
+
+        const VALID_NAME = 'bob';
+        const NAME_ERROR_MESSAGE = `Invalid name: Only '${VALID_NAME}' is valid`;
+        const VALID_AGE = 99;
+        const AGE_ERROR_MESSAGE = `Invalid age: Only '${VALID_AGE}' is valid`;
+        const _sequelize = createSequelize({modelPaths: []});
+
+        @Table
+        class User extends Model<User> {
+          @Column name: string;
+          @Column age: number;
+          @Validator nameValidator(): void {
+            if (this.name !== VALID_NAME) {
+              throw new Error(NAME_ERROR_MESSAGE);
+            }
+          }
+          @Validator ageValidator(): void {
+            if (this.age !== VALID_AGE) {
+              throw new Error(AGE_ERROR_MESSAGE);
+            }
+          }
+        }
+
+        _sequelize.addModels([User]);
+
+        it('should have metadata for multiple validators', () => {
+          const {validate} = Reflect.getMetadata('sequelize:options', User.prototype);
+          expect(validate).to.have.property('nameValidator');
+          expect(validate).to.have.property('ageValidator');
+        });
+
+        it('should throw due to wrong name', () => {
+          const user =  new User({name: 'will', age: VALID_AGE});
+
+          if (majorVersion === 3) {
+            return user.validate().then(err => expect(err.errors[0].message).to.eq(NAME_ERROR_MESSAGE));
+          } else if (majorVersion === 4) {
+            return expect(user.validate()).to.be.rejectedWith(NAME_ERROR_MESSAGE);
+          }
+        });
+
+        it('should throw due to wrong age', () => {
+          const user =  new User({name: VALID_NAME, age: 1});
+
+          if (majorVersion === 3) {
+            return user.validate().then(err => expect(err.errors[0].message).to.eq(AGE_ERROR_MESSAGE));
+          } else if (majorVersion === 4) {
+            return expect(user.validate()).to.be.rejectedWith(AGE_ERROR_MESSAGE);
+          }
+        });
+
+        // it('should not throw', () => {
+        //   const user =  new User({name: VALID_NAME});
+        //
+        //   if (majorVersion === 3) {
+        //     return user.validate().then(err => expect(err).to.be.null);
+        //   } else if (majorVersion === 4) {
+        //     return expect(user.validate()).to.be.fulfilled;
+        //   }
+        // });
 
       });
 

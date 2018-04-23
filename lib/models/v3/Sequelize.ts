@@ -1,39 +1,42 @@
 import 'reflect-metadata';
 import * as SequelizeOrigin from 'sequelize';
 import {Model} from "../Model";
-import {ISequelizeConfig} from "../../interfaces/ISequelizeConfig";
+import {SequelizeConfig} from "../../types/SequelizeConfig";
 import {getModelName, getAttributes, getOptions} from "../../services/models";
 import {PROPERTY_LINK_TO_ORIG} from "../../services/models";
 import {BaseSequelize} from "../BaseSequelize";
 import {Table} from "../../annotations/Table";
-
-let preparedConfig;
+import {BaseAssociation} from '../association/BaseAssociation';
+import {IPreparedAssociationOptionsBelongsToMany} from '../../interfaces/IPreparedAssociationOptionsBelongsToMany';
 
 export class Sequelize extends SequelizeOrigin implements BaseSequelize {
 
   // to fix "$1" called with something that's not an instance of Sequelize.Model
-  Model: any = Function;
+  Model: any;
 
-  thoughMap: {[through: string]: any} = {};
-  _: {[modelName: string]: typeof Model} = {};
-  init: (config: ISequelizeConfig) => void;
-  addModels: (models: Array<typeof Model>|string[]) => void;
+  throughMap: { [through: string]: any };
+  _: { [modelName: string]: typeof Model };
+  init: (config: SequelizeConfig) => void;
+  addModels: (models: Array<typeof Model> | string[]) => void;
   associateModels: (models: Array<typeof Model>) => void;
+  connectionManager: any;
 
-  constructor(config: ISequelizeConfig) {
-    // a spread operator would be the more reasonable approach here,
-    // but this is currently not possible due to a bug by ts
-    // https://github.com/Microsoft/TypeScript/issues/4130
-    // TODO@robin probably make the constructor private and
-    // TODO       use a static factory function instead
-    super(
-      (preparedConfig = BaseSequelize.prepareConfig(config), preparedConfig.name),
-      preparedConfig.username,
-      preparedConfig.password,
-      preparedConfig
-    );
+  constructor(config: SequelizeConfig | string) {
+    if (typeof config === "string") {
+      super(config);
+    } else if (BaseSequelize.isISequelizeUriConfig(config)) {
+      super(config.url, config);
+    } else {
+      super(BaseSequelize.prepareConfig(config));
+    }
 
-    this.init(config);
+    this.throughMap = {};
+    this._ = {};
+    this.Model = Function;
+
+    if (typeof config !== "string") {
+      this.init(config);
+    }
   }
 
   getThroughModel(through: string): typeof Model {
@@ -50,17 +53,36 @@ export class Sequelize extends SequelizeOrigin implements BaseSequelize {
    * The association needs to be adjusted. So that throughModel properties
    * referencing a original sequelize Model instance
    */
-  adjustAssociation(model: any, association: any): void {
+  adjustAssociation(model: any, association: BaseAssociation): void {
 
-    if (association.throughModel && association.throughModel.Model) {
-      const seqThroughModel = association.throughModel.Model;
-      const throughModel = association.throughModel;
+    const options = association.getSequelizeOptions();
+    // The associations has to be adjusted
+    const internalAssociation = model['associations'][options.as as string];
+
+    // String based through's need adjustment
+    if (internalAssociation.oneFromSource &&
+      internalAssociation.oneFromSource.as === 'Through') {
+      const belongsToManyOptions = options as IPreparedAssociationOptionsBelongsToMany;
+      const tableName = belongsToManyOptions.through.model.getTableName();
+
+      // as and associationAccessor values referring to string "Through"
+      internalAssociation.oneFromSource.as = tableName;
+      internalAssociation.oneFromSource.options.as = tableName;
+      internalAssociation.oneFromSource.associationAccessor = tableName;
+      internalAssociation.oneFromTarget.as = tableName;
+      internalAssociation.oneFromTarget.options.as = tableName;
+      internalAssociation.oneFromTarget.associationAccessor = tableName;
+    }
+
+    if (internalAssociation.throughModel && internalAssociation.throughModel.Model) {
+      const seqThroughModel = internalAssociation.throughModel.Model;
+      const throughModel = internalAssociation.throughModel;
 
       Object.keys(seqThroughModel).forEach(key => {
         if (key !== 'name') throughModel[key] = seqThroughModel[key];
       });
 
-      association.throughModel = association.through.model = association.throughModel.Model;
+      internalAssociation.throughModel = internalAssociation.through.model = internalAssociation.throughModel.Model;
     }
   }
 
@@ -87,7 +109,7 @@ export class Sequelize extends SequelizeOrigin implements BaseSequelize {
       // this initializes some stuff for Instance
       model['refreshAttributes']();
 
-      // copy static fields to class
+      // copy own static fields to class
       Object.keys(model).forEach(key => key !== 'name' && (_class[key] = model[key]));
 
       // the class needs to know its sequelize model

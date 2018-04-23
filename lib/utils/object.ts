@@ -15,46 +15,45 @@ export function deepAssign(target: any, ...sources: any[]): any {
       .getOwnPropertyNames(source)
       .forEach(key => assign(key, target, source))
     ;
+    /* istanbul ignore next */
+    if (Object.getOwnPropertySymbols) {
+      Object
+        .getOwnPropertySymbols(source)
+        .forEach(key => assign(key, target, source))
+      ;
+    }
   });
-
   return target;
 
-  function assign(key: string | number, _target: any, _source: any): void {
-
+  function assign(key: string | number | symbol, _target: any, _source: any): void {
     const sourceValue = _source[key];
-    if (sourceValue !== void 0) {
 
+    if (sourceValue !== void 0) {
       let targetValue = _target[key];
 
       if (Array.isArray(sourceValue)) {
-
         if (!Array.isArray(targetValue)) {
           targetValue = [];
         }
-
         const length = targetValue.length;
 
         sourceValue.forEach((_, index) => assign(length + index, targetValue, sourceValue));
-
       } else if (typeof sourceValue === 'object') {
-
-        targetValue = targetValue || {};
-
         if (sourceValue instanceof RegExp) {
-
           targetValue = cloneRegExp(sourceValue);
         } else if (sourceValue instanceof Date) {
-
           targetValue = new Date(sourceValue);
+        } else if (sourceValue === null) {
+          targetValue = null;
         } else {
-
+          if (!targetValue) {
+            targetValue = Object.create(sourceValue.constructor.prototype);
+          }
           deepAssign(targetValue, sourceValue);
         }
       } else {
-
         targetValue = sourceValue;
       }
-
       _target[key] = targetValue;
     }
   }
@@ -98,7 +97,7 @@ export function getAllPropertyNames(obj: any): string[] {
     obj = Object.getPrototypeOf(obj);
   } while (obj !== Object.prototype);
 
-  const exists: {[name: string]: boolean|undefined} = {};
+  const exists: { [name: string]: boolean | undefined } = {};
 
   return names.filter(name => {
 
@@ -108,4 +107,22 @@ export function getAllPropertyNames(obj: any): string[] {
 
     return isValid;
   });
+}
+
+/**
+ * Extends target constructor function members and prototype members
+ * by specified  source members
+ */
+export function extend(target: Function, source: Function): void {
+  // copies all prototype members of this to target.prototype
+  Object
+    .keys(source.prototype)
+    .forEach(name => target.prototype[name] = source.prototype[name])
+  ;
+
+  // copies all static members of this to target
+  Object
+    .keys(source)
+    .forEach(name => target[name] = source[name])
+  ;
 }

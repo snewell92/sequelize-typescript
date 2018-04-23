@@ -16,6 +16,7 @@ export {CreatedAt} from "./lib/annotations/CreatedAt";
 export {DeletedAt} from "./lib/annotations/DeletedAt";
 export {UpdatedAt} from "./lib/annotations/UpdatedAt";
 export {Unique} from "./lib/annotations/Unique";
+export {Comment} from "./lib/annotations/Comment";
 
 export {Contains} from "./lib/annotations/validation/Contains";
 export {Equals} from "./lib/annotations/validation/Equals";
@@ -50,12 +51,49 @@ export {NotEmpty} from "./lib/annotations/validation/NotEmpty";
 export {NotIn} from "./lib/annotations/validation/NotIn";
 export {NotNull} from "./lib/annotations/validation/NotNull";
 export {Validate} from "./lib/annotations/validation/Validate";
+export {Validator} from "./lib/annotations/validation/Validator";
+
+// hooks
+export {BeforeValidate} from "./lib/annotations/hooks/BeforeValidate";
+export {AfterValidate} from "./lib/annotations/hooks/AfterValidate";
+export {ValidationFailed} from "./lib/annotations/hooks/ValidationFailed";
+export {BeforeCreate} from "./lib/annotations/hooks/BeforeCreate";
+export {AfterCreate} from "./lib/annotations/hooks/AfterCreate";
+export {BeforeDestroy} from "./lib/annotations/hooks/BeforeDestroy";
+export {AfterDestroy} from "./lib/annotations/hooks/AfterDestroy";
+export {BeforeRestore} from "./lib/annotations/hooks/BeforeRestore";
+export {AfterRestore} from "./lib/annotations/hooks/AfterRestore";
+export {BeforeUpdate} from "./lib/annotations/hooks/BeforeUpdate";
+export {AfterUpdate} from "./lib/annotations/hooks/AfterUpdate";
+export {BeforeSave} from "./lib/annotations/hooks/BeforeSave";
+export {AfterSave} from "./lib/annotations/hooks/AfterSave";
+export {BeforeUpsert} from "./lib/annotations/hooks/BeforeUpsert";
+export {AfterUpsert} from "./lib/annotations/hooks/AfterUpsert";
+export {BeforeBulkCreate} from "./lib/annotations/hooks/BeforeBulkCreate";
+export {AfterBulkCreate} from "./lib/annotations/hooks/AfterBulkCreate";
+export {BeforeBulkDestroy} from "./lib/annotations/hooks/BeforeBulkDestroy";
+export {AfterBulkDestroy} from "./lib/annotations/hooks/AfterBulkDestroy";
+export {BeforeBulkRestore} from "./lib/annotations/hooks/BeforeBulkRestore";
+export {AfterBulkRestore} from "./lib/annotations/hooks/AfterBulkRestore";
+export {BeforeBulkUpdate} from "./lib/annotations/hooks/BeforeBulkUpdate";
+export {AfterBulkUpdate} from "./lib/annotations/hooks/AfterBulkUpdate";
+export {BeforeFind} from "./lib/annotations/hooks/BeforeFind";
+export {BeforeFindAfterExpandIncludeAll} from "./lib/annotations/hooks/BeforeFindAfterExpandIncludeAll";
+export {BeforeFindAfterOptions} from "./lib/annotations/hooks/BeforeFindAfterOptions";
+export {AfterFind} from "./lib/annotations/hooks/AfterFind";
+export {BeforeCount} from "./lib/annotations/hooks/BeforeCount";
+export {BeforeDelete} from "./lib/annotations/hooks/BeforeDelete";
+export {AfterDelete} from "./lib/annotations/hooks/AfterDelete";
+export {BeforeBulkDelete} from "./lib/annotations/hooks/BeforeBulkDelete";
+export {AfterBulkDelete} from "./lib/annotations/hooks/AfterBulkDelete";
 
 // interfaces
 export {IAssociationActionOptions} from "./lib/interfaces/IAssociationActionOptions";
 export {IBuildOptions} from "./lib/interfaces/IBuildOptions";
 export {IDefineScopeOptions} from "./lib/interfaces/IDefineScopeOptions";
 export {IFindOptions} from "./lib/interfaces/IFindOptions";
+export {ICountOptions} from "./lib/interfaces/ICountOptions";
+export {ICreateOptions} from "./lib/interfaces/ICreateOptions";
 export {IIncludeAssociation} from "./lib/interfaces/IIncludeAssociation";
 export {IIncludeOptions} from "./lib/interfaces/IIncludeOptions";
 export {IPartialDefineAttributeColumnOptions} from "./lib/interfaces/IPartialDefineAttributeColumnOptions";
@@ -63,8 +101,8 @@ export {IScopeFindOptions} from "./lib/interfaces/IScopeFindOptions";
 export {IScopeIncludeAssociation} from "./lib/interfaces/IScopeIncludeAssociation";
 export {IScopeIncludeOptions} from "./lib/interfaces/IScopeIncludeOptions";
 export {IScopeOptions} from "./lib/interfaces/IScopeOptions";
-export {ISequelizeAssociation} from "./lib/interfaces/ISequelizeAssociation";
 export {ISequelizeConfig} from "./lib/interfaces/ISequelizeConfig";
+export {ISequelizeUriConfig} from "./lib/interfaces/ISequelizeUriConfig";
 export {ISequelizeForeignKeyConfig} from "./lib/interfaces/ISequelizeForeignKeyConfig";
 export {ISequelizeValidationOnlyConfig} from "./lib/interfaces/ISequelizeValidationOnlyConfig";
 
